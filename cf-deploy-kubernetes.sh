@@ -69,14 +69,8 @@ $(dirname $0)/template.sh "$deployment_file" > "$DEPLOYMENT_FILE" || fatal "Fail
 
 echo "---> Kubernetes objects to deploy in  $deployment_file :"
 KUBECTL_OBJECTS=/tmp/deployment.objects
-kubectl convert -f "$DEPLOYMENT_FILE" --local=true -o=custom-columns="KIND:{.kind},NAME:{.metadata.name}" > >(tee $KUBECTL_OBJECTS) 2>${KUBECTL_OBJECTS}.errors
-if [ $? != 0 ]; then
-   cat ${KUBECTL_OBJECTS}.errors
-   echo "Failed to parse $deployment_file with kubectl... "
-   echo "Using alternative parsing method... "
-   truncate -s 0 $KUBECTL_OBJECTS
-   objects $DEPLOYMENT_FILE | tee $KUBECTL_OBJECTS
-fi
+truncate -s 0 $KUBECTL_OBJECTS
+objects $DEPLOYMENT_FILE | tee $KUBECTL_OBJECTS
 
 DEPLOYMENT_NAME=$(awk '/^Deployment /{a=$2}END{print a}' $KUBECTL_OBJECTS)
 
